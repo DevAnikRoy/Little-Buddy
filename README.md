@@ -1,6 +1,6 @@
 # Little Buddy
 
-English learning chatbot for children under seven. Current phase: learning engine, localStorage adapter, four-mode chat service, optional Groq, and protected server API complete and tested. Chat UI and deployment are pending subsequent approved phases. The foundation page is not yet connected to the engine.
+English learning chatbot for children under seven. Current phase: child-friendly chat UI, learning engine, localStorage, four-mode service, optional Groq, and protected server API complete and tested locally. Public deployment is pending the next approved phase.
 
 ## Local setup
 Requires Node.js 22+ and npm.
@@ -19,7 +19,7 @@ npm test
 npm run typecheck
 npm run build
 ```
-68 Vitest tests cover progression, context, persistence, mode estimation, SEL, input/output safety, provider fallback/timeouts, rate limiting, and API boundaries. TypeScript check and production build pass.
+71 Vitest tests cover progression, context, persistence, mode estimation, SEL, input/output safety, provider fallback/timeouts, rate limiting, and API boundaries. TypeScript check and production build pass.
 
 ## Deployment
 Import this repository into Vercel with the Next.js framework preset and build command `npm run build`. Add optional GROQ_API_KEY and GROQ_MODEL environment variables on the server. The included vercel.json selects Next.js. Live deployment, complete flow checks and latency benchmarks are pending.
@@ -62,3 +62,16 @@ All request fields use strict Zod schemas. Raw messages are capped at 200 charac
 The bounded in-memory limiter allows 60 requests per IP and 30 per random session per minute, including rate-limit retry headers. IP identity is transiently salted/hashed. Vercel's overwritten x-forwarded-for header is trusted only when VERCEL=1; non-Vercel local calls share a local bucket. See [Vercel forwarding-header behavior](https://vercel.com/docs/headers/request-headers). Limits are per server instance, reset on cold start, and are not distributed protection across instances. Random session IDs are not accounts or authentication. Use platform WAF/rate limiting or shared storage for stronger production abuse protection.
 
 Phase 3 verification: 68/68 tests, TypeScript check and production build passed. Actual local production HTTP checks returned 200 for Support and Learning, with no-store and CSP headers. LLM success, filtering, errors, hung requests, and slow body parsing are covered using mocked provider responses and fake timers; a real keyed Groq call has not been verified. Public deployment and full end-to-end p50/p95 remain pending.
+
+
+## Child-friendly UI (phase 4)
+
+The responsive interface connects to `/api/chat`, with a bear emoji, three large Learn/Play/Talk controls, answer choices, hints, skip, a message composer capped at 200 characters, and Happy/Sad/Tired shortcuts. The side journey shows the computed current level and six mastered skills. It condenses into a short trail on phones. There is no parent/demo panel, read-aloud, or complex animation.
+
+A guarded request lock prevents double submits. Each response is validated with Zod before rendering or saving; curriculum activity content must match the canonical catalog. Successful turns update progress atomically; failures leave the unfinished question and typed input available. Responses and child messages are rendered as text, never injected HTML. Conversation text stays in memory, bounded to 30 recent messages. A six-second client network recovery timeout is separate from the 1200 ms provider timeout; it does not claim slow connections meet the performance target.
+
+Progress hydrates from localStorage after mount and restores the unfinished lesson, including its hint state. The small Reset progress control asks before clearing the app's own progress key. Reset does not change the rate-limit session or remove its cooldown. Storage failures show a notice and allow in-memory play. Requests have a rate-limit cooldown, visible errors, and busy states.
+
+Accessibility includes named controls, keyboard form submission, visible focus, an announced reply/status, an independently scrolling transcript, native progress element, and a reset dialog with focus trapping, Escape/cancel and focus restoration. The informational grown-up note explains rule-based learning-state estimation and optional third-party AI processing.
+
+Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Deployed URL, real keyed Groq flow, and latency benchmarks remain pending.

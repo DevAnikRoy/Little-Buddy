@@ -4,13 +4,9 @@ import { getActivity, type Activity } from "../learning/curriculum";
 import { currentLevel, type Progress } from "../learning/progress";
 import { detectMode, nextChatContext, type ChatContext, type Mode } from "../chat/modes";
 import { inputRisk } from "../chat/safety";
-import { chatRequestSchema, type ChatRequest } from "../chat/schema";
+import { chatRequestSchema, type ChatRequest, type ChatReply } from "../chat/schema";
 import { optionalLlm, type LlmOptions } from "./llm";
 
-export type ChatReply = {
-  mode: Mode; reply: string; choices: string[]; progress: Progress; context: ChatContext;
-  activity: Activity | null; source: "rules" | "llm"; outcome: LearningResult["outcome"] | null;
-};
 function ruleReply(mode: Mode, message: string, context: ChatContext): { reply: string; choices: string[]; openEnded: boolean } {
   const text = normalizeAnswer(message);
   if (mode === "Support") {
@@ -61,6 +57,3 @@ export async function respondToChat(raw: ChatRequest, llmOptions: LlmOptions = {
   const generated = fallback.openEnded ? await optionalLlm({ mode, level: currentLevel(request.progress), message, context }, llmOptions) : null;
   return { mode, reply: generated ?? fallback.reply, choices: fallback.choices, progress: request.progress, context, activity: null, source: generated ? "llm" : "rules", outcome: null };
 }
-
-
-

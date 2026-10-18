@@ -23,6 +23,11 @@ describe("chat API boundary", () => {
     expect((await POST(req(payload(), { "sec-fetch-site": "cross-site" }))).status).toBe(403);
     expect((await POST(req(payload(), { "content-type": "text/plain" }))).status).toBe(415);
   });
+  it("uses the browser Host when Next has an internal URL hostname", async () => {
+    const request = new Request("http://localhost:3001/api/chat", { method: "POST", headers: { host: "127.0.0.1:3001", origin: "http://127.0.0.1:3001", "content-type": "application/json" }, body: JSON.stringify(payload()) });
+    expect((await POST(request)).status).toBe(200);
+    expect((await POST(req(payload(), { origin: "null" }))).status).toBe(403);
+  });
   it("accepts same-origin requests", async () => expect((await POST(req(payload(), { origin: "https://buddy.example" }))).status).toBe(200));
   it("rejects malformed JSON and oversized streamed bodies", async () => {
     for (const body of ["{", "x".repeat(16_385)]) {
