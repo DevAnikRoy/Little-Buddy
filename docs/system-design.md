@@ -13,7 +13,7 @@ Source: [https://github.com/DevAnikRoy/Little-Buddy](https://github.com/DevAnikR
 | Child mode | Rule-based Learning, Conversation, Engagement, Support (learning-state estimation, not emotion recognition) |
 | SEL | Named feelings, effort praise, choices, trusted-grown-up line in Support |
 | Context | Structured `mode` / `topic` / `disengagedTurns` plus saved skill counters and active activity |
-| Latency | Provider abort at 1200 ms; rules path has no model wait. Deployed p50/p95 still to measure |
+| Latency | Provider abort at 1200 ms; rules path has no model wait. Warm deployed rules p50/p95: [latency.md](./latency.md) |
 | Child safety | No PII collection, no accounts, Zod caps, output vocabulary gate, CSP |
 
 ## Non-goals
@@ -115,7 +115,9 @@ The UI uses a request lock, 6 s client abort (separate from 1200 ms provider bud
 | Browser fetch | 6 s | Network recovery, not the product SLO |
 | Serverless | cold start possible | First hit after idle can exceed 2 s |
 
-The assessment asks for under 2 s under **normal** conditions. The design aims at that by keeping learning on rules and bounding the model. It does **not** claim every request, including cold starts, is under 2 s. Deployed p50/p95 will be recorded in the latency phase.
+The assessment asks for under 2 s under **normal** conditions. The design aims at that by keeping learning on rules and bounding the model. It does **not** claim every request, including cold starts or Groq turns, is under 2 s.
+
+Measured on 18 Oct 2026 from Dhaka to production `iad1` (no Groq key): **warm rules POST p50 271 ms / p95 448 ms (n=60)**; first request in the run **1281 ms**. Full conditions: [latency.md](./latency.md).
 
 ## Testing
 
@@ -141,5 +143,5 @@ A live keyed Groq call is still unverified on production because no `GROQ_API_KE
 2. **Child mode** — four modes; the bot does not quiz on every turn.  
 3. **SEL** — feelings, effort, break, trusted adult.  
 4. **Context** — progress + structured chat context on every request.  
-5. **Performance** — 1200 ms provider cap; measurement pending.  
+5. **Performance** — 1200 ms provider cap; warm rules p50/p95 in [latency.md](./latency.md).  
 6. **Deliverables** — live URL, GitHub, this design, [architecture](./architecture.md), README; video next.

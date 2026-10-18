@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { getActivity, type Activity } from "@/lib/learning/curriculum";
+import { getActivity, SKILLS, type Activity, type Skill } from "@/lib/learning/curriculum";
 import { learningSummary } from "@/lib/learning/engine";
-import { createProgress, type Progress } from "@/lib/learning/progress";
+import { createProgress, isMastered, type Progress } from "@/lib/learning/progress";
 import { loadProgress, resetProgress, saveProgress } from "@/lib/learning/storage";
 import { createChatContext, type ChatContext, type Mode } from "@/lib/chat/modes";
 import Icon3D from "./icon-3d";
+import LessonSticker from "./lesson-sticker";
 import PromptBar from "./PromptBar";
 import ReadAloud from "./read-aloud";
 import { chatReplySchema, chatRequestSchema, type ChatRequest } from "@/lib/chat/schema";
@@ -16,14 +17,24 @@ const WELCOME = "Hi, I'm Buddy! Tap Learn, Play, or Talk.";
 const MODE_LABEL: Record<Mode, string> = { Learning: "Learning together", Conversation: "A little chat", Engagement: "Time to play & rest", Support: "Here for your feelings" };
 const MODE_ICON: Record<Mode, string> = { Learning: "✏️", Conversation: "💬", Engagement: "🌈", Support: "💛" };
 const INITIAL_CHOICES = ["Let's learn", "Play", "Let's talk"];
+const SKILL_CHIP: Record<Skill, { label: string; mark: string }> = {
+  colors: { label: "Colors", mark: "🔴" },
+  animals: { label: "Animals", mark: "🐾" },
+  preferences: { label: "I like", mark: "💛" },
+  sentences: { label: "Sentences", mark: "✏️" },
+  descriptions: { label: "Describe", mark: "🎈" },
+  stories: { label: "Stories", mark: "📖" },
+};
 
 function choiceIcon(choice: string): string {
   const key = choice.toLowerCase();
   if (key === "red") return "🔴"; if (key === "blue") return "🔵"; if (key === "yellow") return "🟡"; if (key === "green") return "🟢";
-  if (key === "cat" || key === "cats") return "🐱"; if (key === "dog") return "🐶"; if (key === "duck") return "🦆";
+  if (key === "cat" || key === "cats") return "🐱"; if (key.includes("dog")) return "🐶"; if (key.includes("duck")) return "🦆";
+  if (key.includes("apple")) return "🍎"; if (key.includes("book")) return "📖"; if (key.includes("ball")) return "🟠";
+  if (key.includes("umbrella")) return "☂️"; if (key.includes("grown")) return "🧑"; if (key.includes("bird")) return "🐦";
   if (key.includes("learn")) return "✏️"; if (key.includes("play") || key.includes("game")) return "🌈";
   if (key.includes("break")) return "🌿"; if (key.includes("talk")) return "💬"; if (key.includes("bunny")) return "🐰";
-  if (key.includes("bird")) return "🐦"; if (key.includes("story")) return "📖"; return "✦";
+  if (key.includes("story")) return "📖"; return "✦";
 }
 
 export default function BuddyChat() {
@@ -146,18 +157,25 @@ export default function BuddyChat() {
           <ol className="level-trail" aria-label={`Current level ${summary.level}`}>
             {(["L1", "L2", "L3"] as const).map((level, index) => <li key={level} aria-label={`Level ${index + 1}: ${["Words", "Sentences", "Stories"][index]}`} className={level === summary.level ? "current" : index < Number(summary.level[1]) - 1 ? "done" : "later"} aria-current={level === summary.level ? "step" : undefined}><span className="level-circle">{index < Number(summary.level[1]) - 1 ? "✓" : index + 1}</span><span>{["Words", "Sentences", "Stories"][index]}</span></li>)}
           </ol>
+          <ul className="skill-stickers" aria-label={`${summary.masteredSkills} of 6 skills starred`}>
+            {SKILLS.map(skill => {
+              const got = isMastered(progress, skill);
+              const chip = SKILL_CHIP[skill];
+              return <li key={skill} className={got ? "starred" : "waiting"}><span aria-hidden="true">{got ? "⭐" : chip.mark}</span><span>{chip.label}</span></li>;
+            })}
+          </ul>
           <div className="progress-caption"><span>{summary.complete ? "Look how you grew!" : "Little steps"}</span><strong>{summary.masteredSkills}/6</strong></div>
           <progress max="6" value={summary.masteredSkills} aria-label={`${summary.masteredSkills} of 6 skills mastered`} />
         </section>
       </aside>
-      <section className="chat-panel" aria-label="Chat with Buddy">
-        <header className="chat-header"><span className="buddy-avatar"><Icon3D name="bear" size={58} /></span><div><h2>Buddy</h2><p>Let's discover!</p></div><span className={`mode-indicator mode-${context.mode.toLowerCase()}`} role="status"><span aria-hidden="true">{MODE_ICON[context.mode]}</span>{MODE_LABEL[context.mode]}</span></header>
+      <section className={`chat-panel room-${context.mode.toLowerCase()}`} aria-label="Chat with Buddy">
+        <header className="chat-header"><span className="buddy-avatar"><Icon3D name="bear" size={58} /></span><div><h2>Buddy</h2><p>{context.mode === "Learning" ? "One little question." : context.mode === "Support" ? "Your feelings matter." : context.mode === "Engagement" ? "Let's play a bit." : "I'm listening."}</p></div><span className={`mode-indicator mode-${context.mode.toLowerCase()}`} role="status"><span aria-hidden="true">{MODE_ICON[context.mode]}</span>{MODE_LABEL[context.mode]}</span></header>
         <nav className="activity-nav" aria-label="Choose what to do">{([{ action: "learn", label: "Learn", icon: "learn" }, { action: "play", label: "Play", icon: "play" }, { action: "talk", label: "Talk", icon: "talk" }] as const).map(item => <button key={item.action} disabled={unavailable} aria-pressed={context.mode === ({ learn: "Learning", play: "Engagement", talk: "Conversation" }[item.action])} className={`activity-${item.action}`} onClick={() => void send(item.action)}><Icon3D name={item.icon} size={60} /><span>{item.label}</span></button>)}</nav>
         <div className="chat-messages" role="log" aria-label="Conversation" aria-live="off" aria-busy={busy}>
           {messages.map(message => <div key={message.id} className={`message-row ${message.role}`}>
             <div className={`message-bubble ${message.role === "buddy" && message.id !== 0 ? "reply-reveal" : ""}`}>
               <div className="message-top"><span className="speaker">{message.role === "buddy" ? "Buddy" : "You"}</span>{message.role === "buddy" && <ReadAloud text={`${message.text}${message.activity ? ` ${message.activity.prompt}` : ""}`} />}</div>
-              <p>{message.text}</p>{message.activity && <p className="question">{message.activity.prompt}</p>}
+              <p>{message.text}</p>{message.activity && <div className="lesson-card"><LessonSticker activityId={message.activity.id} /><p className="question">{message.activity.prompt}</p></div>}
             </div>
           </div>)}
           {busy && <div className="thinking" role="status"><Icon3D name="bear" size={40} /><span>Buddy is thinking<span className="thinking-dots" aria-hidden="true">•••</span></span></div>}

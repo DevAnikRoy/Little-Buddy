@@ -9,8 +9,11 @@ English learning chatbot for children under seven. Rules own L1–L3 lessons, ma
 | --- | --- |
 | Architecture (Mermaid) | [docs/architecture.md](docs/architecture.md) |
 | System design | [docs/system-design.md](docs/system-design.md) |
+| Deployed latency | [docs/latency.md](docs/latency.md) |
 
-Production currently has **no** `GROQ_API_KEY`, so live replies are rule-based. Add the server env var on Vercel and redeploy to enable Groq. Deployed end-to-end p50/p95 is the next measurement phase.
+Production currently has **no** `GROQ_API_KEY`, so live replies are rule-based. Add the server env var on Vercel and redeploy to enable Groq.
+
+Warm deployed `POST /api/chat` (rules, n=60, Dhaka → `iad1`, 18 Oct 2026): **p50 271 ms, p95 448 ms**. First request in that run: **1281 ms**. This is not a promise of sub-two-second latency on every cold start or Groq turn. Details and conditions: [docs/latency.md](docs/latency.md).
 
 ## Local setup
 Requires Node.js 22+ and npm.
@@ -46,7 +49,7 @@ To deploy a fork: import the repo in Vercel, set Production Branch to `main`, ad
 ## Scope and limitations
 Rules control L1-L3, skill mastery, activities, checking, and learning context. Four-mode detection and SEL run in the chat service. Optional Groq is limited to open-ended Conversation/Support replies. Progress stays in localStorage, with no database, accounts or personal information collection. No parent panel or complex animations. Browser-only tap-to-listen uses `speechSynthesis`.
 
-The 1200 ms provider timeout cannot guarantee total response latency. Serverless cold starts and the in-memory rate limiter (per instance, reset on idle) are documented in [system design](docs/system-design.md). Latency numbers will be added after the measurement phase.
+The 1200 ms provider timeout cannot guarantee total response latency. Serverless cold starts and the in-memory rate limiter (per instance, reset on idle) are documented in [system design](docs/system-design.md). Measured warm-path p50/p95 and conditions are in [docs/latency.md](docs/latency.md).
 
 
 ## Learning engine (phase 2)
@@ -80,7 +83,7 @@ All request fields use strict Zod schemas. Raw messages are capped at 200 charac
 
 The bounded in-memory limiter allows 60 requests per IP and 30 per random session per minute, including rate-limit retry headers. IP identity is transiently salted/hashed. Vercel's overwritten x-forwarded-for header is trusted only when VERCEL=1; non-Vercel local calls share a local bucket. See [Vercel forwarding-header behavior](https://vercel.com/docs/headers/request-headers). Limits are per server instance, reset on cold start, and are not distributed protection across instances. Random session IDs are not accounts or authentication. Use platform WAF/rate limiting or shared storage for stronger production abuse protection.
 
-Phase 3 verification: 68/68 tests, TypeScript check and production build passed. Actual local production HTTP checks returned 200 for Support and Learning, with no-store and CSP headers. LLM success, filtering, errors, hung requests, and slow body parsing are covered using mocked provider responses and fake timers; a real keyed Groq call has not been verified on production (no Groq env). Live URL is deployed; end-to-end p50/p95 remain pending.
+Phase 3 verification: 68/68 tests, TypeScript check and production build passed. Actual local production HTTP checks returned 200 for Support and Learning, with no-store and CSP headers. LLM success, filtering, errors, hung requests, and slow body parsing are covered using mocked provider responses and fake timers; a real keyed Groq call has not been verified on production (no Groq env). Live URL is deployed. Rules-path p50/p95: [docs/latency.md](docs/latency.md).
 
 
 ## Child-friendly UI (phase 4)
@@ -93,7 +96,7 @@ Progress hydrates from localStorage after mount and restores the unfinished less
 
 Accessibility includes named controls, keyboard form submission, visible focus, an announced reply/status, an independently scrolling transcript, native progress element, and a reset dialog with focus trapping, Escape/cancel and focus restoration. The informational grown-up note explains rule-based learning-state estimation and optional third-party AI processing.
 
-Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Live URL: https://little-buddy-two.vercel.app. Real keyed Groq flow and latency benchmarks remain pending.
+Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Live URL: https://little-buddy-two.vercel.app. Real keyed Groq flow remains unverified. Latency: [docs/latency.md](docs/latency.md).
 
 
 ## Child-first UI polish
