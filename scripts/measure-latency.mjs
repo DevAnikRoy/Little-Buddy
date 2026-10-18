@@ -170,8 +170,8 @@ async function run() {
   };
 
   const fs = await import("node:fs/promises");
-  await fs.mkdir("docs", { recursive: true });
-  await fs.writeFile("docs/latency-raw.json", JSON.stringify(out, null, 2));
+  await fs.mkdir("work", { recursive: true });
+  await fs.writeFile("work/latency-raw.json", JSON.stringify(out, null, 2));
   console.log(JSON.stringify(summary, null, 2));
 }
 

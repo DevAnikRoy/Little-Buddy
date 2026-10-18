@@ -144,4 +144,4 @@ A live keyed Groq call is still unverified on production because no `GROQ_API_KE
 3. **SEL** — feelings, effort, break, trusted adult.  
 4. **Context** — progress + structured chat context on every request.  
 5. **Performance** — 1200 ms provider cap; warm rules p50/p95 in [latency.md](./latency.md).  
-6. **Deliverables** — live URL, GitHub, this design, [architecture](./architecture.md), README; video next.
+6. **Deliverables** — live URL, GitHub, this design, [architecture](./architecture.md), README. The English video is submitted by email, not as extra repo files.

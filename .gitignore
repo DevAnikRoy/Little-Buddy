@@ -9,3 +9,4 @@ coverage/
 *.log
 .npm-cache/
 work/
+docs/latency-raw.json
