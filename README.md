@@ -1,6 +1,16 @@
 # Little Buddy
 
-English learning chatbot for children under seven. Current phase: child-friendly chat UI, learning engine, localStorage, four-mode service, optional Groq, and protected server API complete and tested locally. Public deployment is pending the next approved phase.
+English learning chatbot for children under seven. Rules own L1–L3 lessons, mastery, and four learning-state modes. Optional Groq may write open-ended Conversation/Support replies only, with a 1200 ms timeout and a safe fallback.
+
+**Live URL:** [https://little-buddy-two.vercel.app](https://little-buddy-two.vercel.app)  
+**Source:** [https://github.com/DevAnikRoy/Little-Buddy](https://github.com/DevAnikRoy/Little-Buddy)
+
+| Document | Link |
+| --- | --- |
+| Architecture (Mermaid) | [docs/architecture.md](docs/architecture.md) |
+| System design | [docs/system-design.md](docs/system-design.md) |
+
+Production currently has **no** `GROQ_API_KEY`, so live replies are rule-based. Add the server env var on Vercel and redeploy to enable Groq. Deployed end-to-end p50/p95 is the next measurement phase.
 
 ## Local setup
 Requires Node.js 22+ and npm.
@@ -11,7 +21,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open http://127.0.0.1:3000. The Groq key is optional, server-only, and not used by this foundation page.
+Open http://127.0.0.1:3000. Leave `GROQ_API_KEY` empty to use rules only.
 
 ## Checks
 ```sh
@@ -19,15 +29,24 @@ npm test
 npm run typecheck
 npm run build
 ```
-71 Vitest tests cover progression, context, persistence, mode estimation, SEL, input/output safety, provider fallback/timeouts, rate limiting, and API boundaries. TypeScript check and production build pass.
+71 Vitest tests cover progression, context, persistence, mode estimation, SEL, input/output safety, provider fallback/timeouts, rate limiting, and API boundaries.
 
 ## Deployment
-Import this repository into Vercel with the Next.js framework preset and build command `npm run build`. Add optional GROQ_API_KEY and GROQ_MODEL environment variables on the server. The included vercel.json selects Next.js. Live deployment, complete flow checks and latency benchmarks are pending.
+The GitHub `main` branch is connected to the Vercel project `little-buddy` (team `devanikroys-projects`). Framework is Next.js; build command is `npm run build`. Optional server env:
+
+```
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.1-8b-instant
+```
+
+Never use a `NEXT_PUBLIC_` prefix for the key. `vercel.json` selects the Next.js preset. Vercel Authentication is off so the child URL is public.
+
+To deploy a fork: import the repo in Vercel, set Production Branch to `main`, add the optional env vars, and deploy.
 
 ## Scope and limitations
-Rules now control L1-L3, skill mastery, activities, checking, and learning context. Four-mode detection and SEL now run in the chat service. Optional Groq is limited to open-ended Conversation/Support replies with a 1200 ms timeout and safe fallback. Progress stays in localStorage, with no database, accounts or personal information collection. No parent panel or complex animations. Browser-only tap-to-listen was added in the later UI polish scope.
+Rules control L1-L3, skill mastery, activities, checking, and learning context. Four-mode detection and SEL run in the chat service. Optional Groq is limited to open-ended Conversation/Support replies. Progress stays in localStorage, with no database, accounts or personal information collection. No parent panel or complex animations. Browser-only tap-to-listen uses `speechSynthesis`.
 
-Provider timeout alone cannot guarantee total response latency. Deployed end-to-end p50/p95 and conditions will be reported after benchmarking. Serverless cold starts and rate-limiter limitations must be documented honestly.
+The 1200 ms provider timeout cannot guarantee total response latency. Serverless cold starts and the in-memory rate limiter (per instance, reset on idle) are documented in [system design](docs/system-design.md). Latency numbers will be added after the measurement phase.
 
 
 ## Learning engine (phase 2)
@@ -42,7 +61,7 @@ One wrong answer keeps the current question. Two consecutive wrong answers selec
 
 The localStorage adapter saves only versioned skill counters, evidence IDs, and bounded activity context under `little-buddy:progress:v1`. It stores no free-text messages or conversation transcripts. Stored data is schema-validated; malformed, oversized, and unsupported-version data resets safely in memory. Blocked storage or quota errors return a status so the UI can continue in memory. Reset removes only Little Buddy's key. Browser-local progress can be edited or cleared by the device user; it is not a trusted credential or certified achievement.
 
-Phase 2 verification: 19/19 unit tests, TypeScript check, and production build passed. Browser/UI integration verification is pending phase 4.
+Phase 2 verification: 19/19 unit tests, TypeScript check, and production build passed. UI integration is in phase 4.
 
 
 ## Chat service and security (phase 3)
@@ -61,7 +80,7 @@ All request fields use strict Zod schemas. Raw messages are capped at 200 charac
 
 The bounded in-memory limiter allows 60 requests per IP and 30 per random session per minute, including rate-limit retry headers. IP identity is transiently salted/hashed. Vercel's overwritten x-forwarded-for header is trusted only when VERCEL=1; non-Vercel local calls share a local bucket. See [Vercel forwarding-header behavior](https://vercel.com/docs/headers/request-headers). Limits are per server instance, reset on cold start, and are not distributed protection across instances. Random session IDs are not accounts or authentication. Use platform WAF/rate limiting or shared storage for stronger production abuse protection.
 
-Phase 3 verification: 68/68 tests, TypeScript check and production build passed. Actual local production HTTP checks returned 200 for Support and Learning, with no-store and CSP headers. LLM success, filtering, errors, hung requests, and slow body parsing are covered using mocked provider responses and fake timers; a real keyed Groq call has not been verified. Public deployment and full end-to-end p50/p95 remain pending.
+Phase 3 verification: 68/68 tests, TypeScript check and production build passed. Actual local production HTTP checks returned 200 for Support and Learning, with no-store and CSP headers. LLM success, filtering, errors, hung requests, and slow body parsing are covered using mocked provider responses and fake timers; a real keyed Groq call has not been verified on production (no Groq env). Live URL is deployed; end-to-end p50/p95 remain pending.
 
 
 ## Child-friendly UI (phase 4)
@@ -74,7 +93,7 @@ Progress hydrates from localStorage after mount and restores the unfinished less
 
 Accessibility includes named controls, keyboard form submission, visible focus, an announced reply/status, an independently scrolling transcript, native progress element, and a reset dialog with focus trapping, Escape/cancel and focus restoration. The informational grown-up note explains rule-based learning-state estimation and optional third-party AI processing.
 
-Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Deployed URL, real keyed Groq flow, and latency benchmarks remain pending.
+Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Live URL: https://little-buddy-two.vercel.app. Real keyed Groq flow and latency benchmarks remain pending.
 
 
 ## Child-first UI polish
