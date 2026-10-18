@@ -14,7 +14,7 @@ export function scoreEnglishVoice(name: string, lang: string, localService: bool
   return score;
 }
 
-export function pickBuddyVoice(voices: readonly Pick<SpeechSynthesisVoice, "name" | "lang" | "localService">[]) {
+export function pickBuddyVoice(voices: readonly SpeechSynthesisVoice[]) {
   const ranked = voices
     .map(voice => ({ voice, score: scoreEnglishVoice(voice.name, voice.lang, voice.localService) }))
     .filter(entry => entry.score > -500)
