@@ -6,10 +6,8 @@ Measured **18 October 2026, 12:20–12:21 PM Bangladesh time (UTC+6)** against p
 - API: `POST /api/chat`
 - Deployment function region: `iad1`
 - Client: Node.js `fetch` on a Windows machine in Dhaka, Bangladesh
-- Script: `node scripts/measure-latency.mjs`
+- Script: `node scripts/measure-latency.mjs` (writes a local sample dump under `work/`, not committed)
 - Server `GROQ_API_KEY`: not set. Every timed chat reply had `source: "rules"`. The Groq path was **not** measured.
-
-Raw samples: [latency-raw.json](./latency-raw.json)
 
 ## What the timer includes
 
