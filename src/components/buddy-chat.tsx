@@ -1,19 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { getActivity, SKILLS, SKILL_LEVEL, type Activity } from "@/lib/learning/curriculum";
+import { getActivity, type Activity } from "@/lib/learning/curriculum";
 import { learningSummary } from "@/lib/learning/engine";
-import { createProgress, isMastered, type Progress } from "@/lib/learning/progress";
+import { createProgress, type Progress } from "@/lib/learning/progress";
 import { loadProgress, resetProgress, saveProgress } from "@/lib/learning/storage";
 import { createChatContext, type ChatContext, type Mode } from "@/lib/chat/modes";
+import Icon3D from "./icon-3d";
+import PromptBar from "./PromptBar";
+import ReadAloud from "./read-aloud";
 import { chatReplySchema, chatRequestSchema, type ChatRequest } from "@/lib/chat/schema";
 
 type Message = { id: number; role: "buddy" | "child"; text: string; activity?: Activity | null };
-const WELCOME = "Hello, little friend! I'm Buddy. Shall we learn, play, or have a little chat?";
+const WELCOME = "Hi, I'm Buddy! Tap Learn, Play, or Talk.";
 const MODE_LABEL: Record<Mode, string> = { Learning: "Learning together", Conversation: "A little chat", Engagement: "Time to play & rest", Support: "Here for your feelings" };
 const MODE_ICON: Record<Mode, string> = { Learning: "✏️", Conversation: "💬", Engagement: "🌈", Support: "💛" };
-const SKILL_LABELS = { colors: "Colors", animals: "Animals", preferences: "I like…", sentences: "Sentences", descriptions: "Describing", stories: "Stories" };
-const SKILL_ICONS = { colors: "🎨", animals: "🐾", preferences: "🍎", sentences: "💬", descriptions: "🔎", stories: "📖" };
 const INITIAL_CHOICES = ["Let's learn", "Play", "Let's talk"];
 
 function choiceIcon(choice: string): string {
@@ -38,12 +39,14 @@ export default function BuddyChat() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [retryAfter, setRetryAfter] = useState(0);
   const [announcement, setAnnouncement] = useState(WELCOME);
+  const [celebration, setCelebration] = useState(0);
   const session = useRef("");
   const stateRef = useRef({ progress, context });
   const lock = useRef(false);
   const sequence = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const chatEnd = useRef<HTMLDivElement>(null);
+  const revealReply = useRef(false);
   const resetButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export default function BuddyChat() {
     return () => { sequence.current++; abortRef.current?.abort(); };
   }, []);
 
-  useEffect(() => { const log = chatEnd.current?.parentElement; if (log) log.scrollTop = log.scrollHeight; }, [messages, busy]);
+  useEffect(() => { const log = chatEnd.current?.parentElement; if (log) { log.scrollTop = log.scrollHeight; if (revealReply.current) { log.scrollIntoView({ block: "nearest", behavior: "instant" }); revealReply.current = false; } } }, [messages, busy]);
   useEffect(() => {
     if (!retryAfter) return;
     const timer = setInterval(() => setRetryAfter(value => Math.max(0, value - 1)), 1000);
@@ -98,7 +101,9 @@ export default function BuddyChat() {
       if (ticket !== sequence.current) return;
       stateRef.current = { progress: result.progress, context: result.context };
       setProgress(result.progress); setContext(result.context); setChoices(result.choices);
+      revealReply.current = true;
       setMessages(previous => [...previous, { id: ticket * 2 - 1, role: "child" as const, text: display }, { id: ticket * 2, role: "buddy" as const, text: result.reply, activity: result.activity }].slice(-30));
+      if (result.outcome === "correct") setCelebration(ticket);
       setAnnouncement(`${result.reply}${result.activity ? ` ${result.activity.prompt}` : ""}`);
       if (action === "message") setInput("");
       if (!saveProgress(result.progress)) setStorageNote("This browser cannot save progress. You can keep playing on this page.");
@@ -112,7 +117,7 @@ export default function BuddyChat() {
   }
 
   function doReset() {
-    sequence.current++; abortRef.current?.abort(); lock.current = false; setBusy(false);
+    sequence.current++; abortRef.current?.abort(); lock.current = false; setBusy(false); setCelebration(0);
     const reset = resetProgress(); const nextContext = createChatContext();
     stateRef.current = { progress: reset.state, context: nextContext };
     setProgress(reset.state); setContext(nextContext); setChoices(INITIAL_CHOICES);
@@ -126,51 +131,52 @@ export default function BuddyChat() {
   const unavailable = !ready || busy || retryAfter > 0;
   const active = messages.at(-1)?.role === "buddy" ? messages.at(-1)?.activity : null;
 
+  const visibleChoices = choices.filter(choice => !["let's learn", "let's talk", "play"].includes(choice.toLowerCase()));
   return <div className="app-shell">
     <header className="site-header">
-      <a className="brand" href="/" aria-label="Little Buddy home"><span className="brand-mark" aria-hidden="true">🐻</span><span>little buddy<span className="brand-dot">.</span></span></a>
-      <span className="header-note"><span aria-hidden="true">☀</span> A little English. A lot of heart.</span>
+      <a className="brand" href="/" aria-label="Little Buddy home"><Icon3D name="bear" size={52} /><span>little buddy<span className="brand-dot">.</span></span></a>
+      <span className="header-note">A little English. A lot of heart.</span>
       <button ref={resetButton} className="reset-button" onClick={() => setConfirmReset(true)} disabled={!ready}>Reset progress</button>
     </header>
     <main className="learning-layout">
       <aside className="buddy-sidebar" aria-label="Your learning journey">
-        <div className="buddy-intro"><span className="hello-sticker">hello, friend!</span><span className="big-bear" role="img" aria-label="Buddy the friendly bear">🐻</span><h1>Little steps.<br /><span>Big smiles.</span></h1><p>Learn a little.<br />Play a little. Be you.</p></div>
-        <section className="journey"><div className="section-heading"><h2>Your little journey</h2><span aria-hidden="true">✦</span></div>
+        <div className="mascot-stage"><span className="mascot-spark spark-one" aria-hidden="true"><Icon3D name="star" size={42} /></span><Icon3D name="bear" size={168} className="mascot-bear" /><span className="mascot-spark spark-two" aria-hidden="true">✦</span></div>
+        <h1>Hi, little friend!</h1>
+        <section className="journey" aria-label="Learning progress">
           <ol className="level-trail" aria-label={`Current level ${summary.level}`}>
-            {(["L1", "L2", "L3"] as const).map((level, index) => <li key={level} className={level === summary.level ? "current" : index < Number(summary.level[1]) - 1 ? "done" : "later"} aria-current={level === summary.level ? "step" : undefined}><span className="level-circle">{index < Number(summary.level[1]) - 1 ? "✓" : index + 1}</span><span>{["Words", "Sentences", "Stories"][index]}</span></li>)}
+            {(["L1", "L2", "L3"] as const).map((level, index) => <li key={level} aria-label={`Level ${index + 1}: ${["Words", "Sentences", "Stories"][index]}`} className={level === summary.level ? "current" : index < Number(summary.level[1]) - 1 ? "done" : "later"} aria-current={level === summary.level ? "step" : undefined}><span className="level-circle">{index < Number(summary.level[1]) - 1 ? "✓" : index + 1}</span><span>{["Words", "Sentences", "Stories"][index]}</span></li>)}
           </ol>
-          <div className="progress-caption"><span>{summary.complete ? "Every skill practised!" : "One step at a time"}</span><strong>{summary.masteredSkills}/6 skills</strong></div>
+          <div className="progress-caption"><span>{summary.complete ? "Look how you grew!" : "Little steps"}</span><strong>{summary.masteredSkills}/6</strong></div>
           <progress max="6" value={summary.masteredSkills} aria-label={`${summary.masteredSkills} of 6 skills mastered`} />
-          <div className="skill-list">{SKILLS.map(skill => <span key={skill} className={`skill ${isMastered(progress, skill) ? "mastered" : ""}`} title={`${SKILL_LABELS[skill]} — ${SKILL_LEVEL[skill]}${isMastered(progress, skill) ? ", mastered" : ""}`}><span aria-hidden="true">{isMastered(progress, skill) ? "✓" : SKILL_ICONS[skill]}</span>{SKILL_LABELS[skill]}</span>)}</div>
         </section>
-        <p className="sidebar-reminder"><span aria-hidden="true">💛</span> Trying is how we grow.</p>
       </aside>
       <section className="chat-panel" aria-label="Chat with Buddy">
-        <header className="chat-header"><span className="buddy-avatar" aria-hidden="true">🐻</span><div><h2>Buddy</h2><p>Your English practice pal</p></div><span className={`mode-indicator mode-${context.mode.toLowerCase()}`} role="status"><span aria-hidden="true">{MODE_ICON[context.mode]}</span>{MODE_LABEL[context.mode]}</span></header>
-        <nav className="activity-nav" aria-label="Choose what to do">{([{ action: "learn", label: "Learn", icon: "✏️" }, { action: "play", label: "Play", icon: "🌈" }, { action: "talk", label: "Talk", icon: "💬" }] as const).map(item => <button key={item.action} disabled={unavailable} className={context.mode === ({ learn: "Learning", play: "Engagement", talk: "Conversation" }[item.action]) ? "selected" : ""} onClick={() => void send(item.action)}><span aria-hidden="true">{item.icon}</span>{item.label}</button>)}</nav>
+        <header className="chat-header"><span className="buddy-avatar"><Icon3D name="bear" size={58} /></span><div><h2>Buddy</h2><p>Let's discover!</p></div><span className={`mode-indicator mode-${context.mode.toLowerCase()}`} role="status"><span aria-hidden="true">{MODE_ICON[context.mode]}</span>{MODE_LABEL[context.mode]}</span></header>
+        <nav className="activity-nav" aria-label="Choose what to do">{([{ action: "learn", label: "Learn", icon: "learn" }, { action: "play", label: "Play", icon: "play" }, { action: "talk", label: "Talk", icon: "talk" }] as const).map(item => <button key={item.action} disabled={unavailable} aria-pressed={context.mode === ({ learn: "Learning", play: "Engagement", talk: "Conversation" }[item.action])} className={`activity-${item.action}`} onClick={() => void send(item.action)}><Icon3D name={item.icon} size={60} /><span>{item.label}</span></button>)}</nav>
         <div className="chat-messages" role="log" aria-label="Conversation" aria-live="off" aria-busy={busy}>
-          <p className="chat-day">A good day for a little discovery</p>
           {messages.map(message => <div key={message.id} className={`message-row ${message.role}`}>
-            {message.role === "buddy" && <span className="message-avatar" aria-hidden="true">🐻</span>}
-            <div className="message-bubble"><span className="speaker">{message.role === "buddy" ? "Buddy" : "You"}</span><p>{message.text}</p>{message.activity && <p className="question">{message.activity.prompt}</p>}</div>
+            <div className={`message-bubble ${message.role === "buddy" && message.id !== 0 ? "reply-reveal" : ""}`}>
+              <div className="message-top"><span className="speaker">{message.role === "buddy" ? "Buddy" : "You"}</span>{message.role === "buddy" && <ReadAloud text={`${message.text}${message.activity ? ` ${message.activity.prompt}` : ""}`} />}</div>
+              <p>{message.text}</p>{message.activity && <p className="question">{message.activity.prompt}</p>}
+            </div>
           </div>)}
-          {busy && <div className="thinking" role="status">🐻 Buddy is thinking…</div>}
+          {busy && <div className="thinking" role="status"><Icon3D name="bear" size={40} /><span>Buddy is thinking<span className="thinking-dots" aria-hidden="true">•••</span></span></div>}
           <div ref={chatEnd} />
         </div>
         <div className="chat-controls">
-          <div className="answer-choices" aria-label={context.mode === "Learning" ? "Answer choices" : "Things you can say"}>{choices.map(choice => <button key={choice} disabled={unavailable} onClick={() => void send("message", choice)}><span aria-hidden="true">{choiceIcon(choice)}</span>{choice}</button>)}</div>
-          {context.mode === "Learning" && active && <div className="lesson-tools"><button disabled={unavailable} onClick={() => void send("hint")}>💡 A little hint</button><button disabled={unavailable} onClick={() => void send("skip")}>Try another ↗</button></div>}
-          {error && <div className="error-note" role="alert">{error}{retryAfter > 0 && <strong> {retryAfter}s</strong>}</div>}
-          <form className="composer" onSubmit={submit}><label className="sr-only" htmlFor="chat-input">Your message to Buddy</label><input id="chat-input" name="message" placeholder="Say something to Buddy…" value={input} onChange={e => setInput(e.target.value)} maxLength={200} autoComplete="off" disabled={!ready || busy} aria-describedby="message-limit" /><button type="submit" disabled={unavailable || !input.trim()} aria-label="Send message"><span aria-hidden="true">↑</span></button></form>
-          <div className="composer-meta"><span>Or tap a button above</span><span id="message-limit">{input.length}/200</span></div>
-          <div className="feelings-row"><span>I feel…</span>{[{ text: "Happy", emoji: "😊" }, { text: "Sad", emoji: "💙" }, { text: "Tired", emoji: "😴" }].map(feeling => <button key={feeling.text} disabled={unavailable} onClick={() => void send("message", `I am ${feeling.text.toLowerCase()}`)}><span aria-hidden="true">{feeling.emoji}</span>{feeling.text}</button>)}</div>
+          {celebration > 0 && <div key={celebration} className="celebration" aria-hidden="true">{[0,1,2,3,4,5,6].map(index => <span key={index} style={{ "--piece": index } as React.CSSProperties}>✦</span>)}</div>}
+          {visibleChoices.length > 0 && <div className={`answer-choices ${visibleChoices.every(choice => choice.length <= 8) ? "compact-choices" : ""}`} aria-label={context.mode === "Learning" ? "Answer choices" : "Things you can say"}>{visibleChoices.map(choice => <button key={choice} disabled={unavailable} onClick={() => void send("message", choice)}><span aria-hidden="true">{choiceIcon(choice)}</span><span>{choice}</span></button>)}</div>}
+          {context.mode === "Learning" && active && <div className="lesson-tools"><button disabled={unavailable} onClick={() => void send("hint")}><span aria-hidden="true">💡</span>Hint</button><button disabled={unavailable} onClick={() => void send("skip")}>Another one<span aria-hidden="true">↗</span></button></div>}
+          <fieldset className="feelings-row"><legend>I feel…</legend>{[{ text: "Happy", icon: "happy" }, { text: "Sad", icon: "sad" }, { text: "Tired", icon: "tired" }].map(feeling => <button key={feeling.text} className={`feeling-${feeling.icon}`} disabled={unavailable} onClick={() => void send("message", `I am ${feeling.text.toLowerCase()}`)}><Icon3D name={feeling.icon as "happy" | "sad" | "tired"} size={52} /><span>{feeling.text}</span></button>)}</fieldset>
+          {error && <div className="error-note" role="alert"><span aria-hidden="true">🌱</span><p>{error}{retryAfter > 0 && <strong> {retryAfter}s</strong>}</p></div>}
+          <PromptBar value={input} onChange={setInput} onSubmit={submit} disabled={!ready || busy} sendDisabled={unavailable} busy={busy} />
         </div>
       </section>
     </main>
-    <footer className="site-footer"><span>Made for little learners, with a little grown-up help.</span><span>No names or private details, please. Progress saves on this device.</span></footer>
+    <footer className="site-footer"><span>No names or private details, please.</span><span>Little steps count. Every single one.</span></footer>
     {storageNote && <p className="storage-note" role="status">{storageNote}</p>}
-    <details className="privacy-note"><summary>A note for grown-ups</summary><p>Buddy estimates learning state with rules. It does not precisely recognise emotions. Progress stays in this browser; messages are not saved by the app. If AI replies are enabled, eligible chat messages are sent to Groq. Please supervise young learners and keep personal details out of chat.</p></details>
+    <details className="privacy-note"><summary>A note for grown-ups</summary><p>Buddy estimates learning state with rules. It does not precisely recognise emotions. Progress stays in this browser; messages are not saved by the app. If AI replies are enabled, eligible chat messages are sent to Groq. Please supervise young learners and keep personal details out of chat. Listen buttons use this browser's English speech voice, only when tapped.</p></details>
     <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
-    {confirmReset && <div className="dialog-backdrop"><section role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="reset-dialog" onKeyDown={e => { if (e.key === "Escape") { setConfirmReset(false); resetButton.current?.focus(); } if (e.key === "Tab") { e.preventDefault(); const buttons = e.currentTarget.querySelectorAll("button"); const index = Array.from(buttons).indexOf(document.activeElement as HTMLButtonElement); buttons[(index + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus(); } }}><span aria-hidden="true">🌱</span><h2 id="reset-title">Start a new little journey?</h2><p>This clears saved learning progress and starts again at level 1.</p><div><button autoFocus onClick={() => { setConfirmReset(false); resetButton.current?.focus(); }}>Keep my progress</button><button onClick={doReset}>Yes, start fresh</button></div></section></div>}
+    {confirmReset && <div className="dialog-backdrop"><section role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="reset-dialog" onKeyDown={e => { if (e.key === "Escape") { setConfirmReset(false); resetButton.current?.focus(); } if (e.key === "Tab") { e.preventDefault(); const buttons = e.currentTarget.querySelectorAll("button"); const index = Array.from(buttons).indexOf(document.activeElement as HTMLButtonElement); buttons[(index + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus(); } }}><Icon3D name="star" size={64} /><h2 id="reset-title">A fresh little start?</h2><p>This clears saved progress and starts again at level 1.</p><div><button autoFocus onClick={() => { setConfirmReset(false); resetButton.current?.focus(); }}>Keep my progress</button><button onClick={doReset}>Start fresh</button></div></section></div>}
   </div>;
 }

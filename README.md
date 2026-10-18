@@ -25,7 +25,7 @@ npm run build
 Import this repository into Vercel with the Next.js framework preset and build command `npm run build`. Add optional GROQ_API_KEY and GROQ_MODEL environment variables on the server. The included vercel.json selects Next.js. Live deployment, complete flow checks and latency benchmarks are pending.
 
 ## Scope and limitations
-Rules now control L1-L3, skill mastery, activities, checking, and learning context. Four-mode detection and SEL now run in the chat service. Optional Groq is limited to open-ended Conversation/Support replies with a 1200 ms timeout and safe fallback. Progress stays in localStorage, with no database, accounts or personal information collection. No parent panel, read-aloud or complex animations.
+Rules now control L1-L3, skill mastery, activities, checking, and learning context. Four-mode detection and SEL now run in the chat service. Optional Groq is limited to open-ended Conversation/Support replies with a 1200 ms timeout and safe fallback. Progress stays in localStorage, with no database, accounts or personal information collection. No parent panel or complex animations. Browser-only tap-to-listen was added in the later UI polish scope.
 
 Provider timeout alone cannot guarantee total response latency. Deployed end-to-end p50/p95 and conditions will be reported after benchmarking. Serverless cold starts and rate-limiter limitations must be documented honestly.
 
@@ -66,7 +66,7 @@ Phase 3 verification: 68/68 tests, TypeScript check and production build passed.
 
 ## Child-friendly UI (phase 4)
 
-The responsive interface connects to `/api/chat`, with a bear emoji, three large Learn/Play/Talk controls, answer choices, hints, skip, a message composer capped at 200 characters, and Happy/Sad/Tired shortcuts. The side journey shows the computed current level and six mastered skills. It condenses into a short trail on phones. There is no parent/demo panel, read-aloud, or complex animation.
+The responsive interface connects to `/api/chat`, with a bear emoji, three large Learn/Play/Talk controls, answer choices, hints, skip, a message composer capped at 200 characters, and Happy/Sad/Tired shortcuts. The side journey shows the computed current level and six mastered skills. It condenses into a short trail on phones. There is no parent/demo panel. The later UI polish adds browser-only tap-to-listen and lightweight CSS feedback.
 
 A guarded request lock prevents double submits. Each response is validated with Zod before rendering or saving; curriculum activity content must match the canonical catalog. Successful turns update progress atomically; failures leave the unfinished question and typed input available. Responses and child messages are rendered as text, never injected HTML. Conversation text stays in memory, bounded to 30 recent messages. A six-second client network recovery timeout is separate from the 1200 ms provider timeout; it does not claim slow connections meet the performance target.
 
@@ -75,3 +75,37 @@ Progress hydrates from localStorage after mount and restores the unfinished less
 Accessibility includes named controls, keyboard form submission, visible focus, an announced reply/status, an independently scrolling transcript, native progress element, and a reset dialog with focus trapping, Escape/cancel and focus restoration. The informational grown-up note explains rule-based learning-state estimation and optional third-party AI processing.
 
 Manual browser verification on the local production app: Learn -> correct Red answer -> next Blue question; hint; Sad -> Support without a quiz; resume Learn; reload -> unfinished Blue question restored; typed animal conversation submitted with Enter; Play -> pretend choices; cancel/reset -> fresh L1 welcome persisted across reload. Mobile viewport check: document width 375 CSS px, scroll width 375 CSS px (no horizontal overflow). Desktop and phone screenshots inspected. An actual browser-origin hostname mismatch was fixed and covered by an API regression test. Deployed URL, real keyed Groq flow, and latency benchmarks remain pending.
+
+
+## Child-first UI polish
+
+Work is confined to the `polish` branch. The learning engine, server API, and all existing tests are unchanged. The interface now uses a simplified bear/three-level-dot/progress sidebar, one Learn/Play/Talk group, large 3D feelings buttons, equal-sized short answer choices, 16px minimum visible text, and at least 56px button targets. Primary labels are short and paired with pictures. The palette combines warm paper with soft mint, honey and lavender; rounded Nunito is served locally with font-display swap.
+
+Every Buddy message has a tap-to-listen/stop control using browser `speechSynthesis`: English voice (local English preferred), rate 0.78, and no application speech API. There is no autoplay. Browser/OS voice availability varies; missing voices or audio failures have a gentle fallback. Device speech services may implement some voices remotely; the app itself does not call an external speech provider.
+
+React Bits Prompt Bar was installed through its documented CSS variant:
+
+```sh
+npx --yes shadcn@latest add @react-bits/PromptBar-TS-CSS --yes
+```
+
+`components.json` records the registry. The installed source was adapted in `src/components/PromptBar.tsx` and `PromptBar.css`: retained field/footer/send-glyph composition, controlled one-line draft, 200-character cap and existing submit behavior. Model/effort pickers, attachments, dictation, source menus and canvas spark rendering were removed for young children. Unused installer-added motion/hugeicons dependencies were removed again; no new animation runtime remains in package.json.
+
+All eight icons are local optimized WebP, lazy-loaded with fixed dimensions and async decoding; each is below 6 KB (30,902 bytes total). Nunito's local Latin variable WOFF2 is 39,128 bytes. No images/fonts load from third-party servers at runtime. Replies are fully present immediately and receive a 180ms CSS reveal; correct answers get seven small CSS sparkles, and button presses have gentle feedback. Reduced-motion users receive no reveal, bounce, typing pulse or sparkle motion. No WebGL, scroll hijacking, autoplay sound, or artificial response delay is added.
+
+### Credits and Licenses
+
+- **3dicons — Vijay Verma:** pencil (`learn.webp`), rocket (`play.webp`), chat text (`talk.webp`), star (`star.webp`), downloaded from the official V1 color asset URLs in the source repository. [3dicons](https://3dicons.co/) states **CC0**; the [repository license](https://github.com/realvjy/3dicons/blob/develop/LICENSE) is CC0 1.0 Universal. Attribution is voluntary. Full text: `public/licenses/3dicons-cc0.txt`.
+- **Microsoft Fluent Emoji:** grinning face (`happy.webp`), sad but relieved face (`sad.webp`), sleeping face (`tired.webp`), and bear (`bear.webp`), from the official repository's 3D PNG assets, converted to WebP. [MIT license](https://github.com/microsoft/fluentui-emoji/blob/main/LICENSE), copyright Microsoft Corporation; notice preserved in `public/licenses/fluent-emoji.txt`. The explicit faces were chosen to make feelings easier to recognise. All exact icon source URLs, authors, license labels, and optimized byte sizes are recorded in `public/icons/sources.json`.
+- **React Bits Prompt Bar — David Haz:** [component](https://reactbits.dev/micro/prompt-bar), [installation documentation](https://reactbits.dev/get-started/installation), [license](https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md). **MIT + Commons Clause**, not plain MIT: permission covers use/modification within an application, with a restriction on selling, sublicensing or redistributing the components themselves. This is an adapted part of Little Buddy, not a component resale package. Copyright and full license preserved in `public/licenses/react-bits.txt` and source comments.
+- **Nunito:** local Latin variable font distributed by [Fontsource](https://fontsource.org/fonts/nunito), version 5.3.0. Font file source: `https://cdn.jsdelivr.net/npm/@fontsource-variable/nunito@5.3.0/files/nunito-latin-wght-normal.woff2`. **SIL Open Font License 1.1**, preserved in `public/licenses/nunito-ofl.txt`, from the [Google Fonts Nunito source](https://github.com/google/fonts/tree/main/ofl/nunito). No proprietary reference-site fonts were copied.
+- **Scrolltide:** [public library](https://www.scrolltide.co/) studied for separated content areas, interaction-focused controls and reveal ideas. Implementation is original lightweight CSS; no template, prompt, preview video, image, shader or component source was copied. Its [terms](https://www.scrolltide.co/terms) describe a limited personal/client-use product license and restrict redistribution and marketing-asset reuse. No paid license was acquired or required for the independent implementation.
+- **Refero Styles:** studied [Slush](https://styles.refero.design/style/8b6b547f-a357-4f1b-9842-4579c62dd42b) for pastel surfaces/soft sticker shapes and [Notion](https://styles.refero.design/style/2bf4c61f-de10-4614-ba1b-20c0453bd2a9) for warm-paper palette/spacing. These were visual references only. A reusable license for Refero's generated code/assets was not established (the attempted parent-site terms URL was unavailable), so no screenshots, DESIGN.md text, generated CSS, assets or proprietary fonts were redistributed. Little Buddy uses its own CSS and licensed Nunito.
+
+### Polish verification and intentional simplifications
+
+Production builds passed after icon assets, Icon3D, Prompt Bar installation/adaptation, read-aloud component, and the integrated UI batches. Desktop browser checks confirmed loaded local icons, a single mode navigation group, no visible text below 16px and no buttons below 56px. Phone checks at 375 CSS px confirmed no horizontal overflow, large feeling controls, learning answers and Support transitions. Listen toggles to Stop on tap. Network failure was tested by stopping the owned local server: a friendly error appeared while the draft and learning state were retained. The final test/build result is recorded below.
+
+Skipped deliberately: paid Scrolltide templates, copied Refero code/fonts, full developer-oriented Prompt Bar controls, heavy animation libraries/WebGL and autoplay. English speech availability depends on the browser/OS; no external speech service was added. Reduced motion is implemented in CSS. No backend or API latency logic changed.
+
+Final polish verification: 71/71 existing tests passed; TypeScript check passed; final production build passed after granting access to the Windows build-output cache. No cache/source deletion was needed. Final mobile check: three equal-width answer choices, three aligned 96px feelings buttons, 0 button targets below 56px, and no horizontal overflow at 375px. Listen/Stop toggled without a cancellation error. The owned preview server was stopped before completion. No push was performed.
