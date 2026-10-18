@@ -29,7 +29,15 @@ export async function POST(request: Request) {
   const ipLimit = rateLimiter.ip(requestIp(request.headers));
   if (!ipLimit.allowed) return json({ error: "Let's take a short pause and try again." }, 429, { "Retry-After": String(ipLimit.retryAfter) });
   const origin = request.headers.get("origin");
-  if ((origin && origin !== new URL(request.url).origin) || request.headers.get("sec-fetch-site") === "cross-site") return json({ error: "Please use Little Buddy's own page." }, 403);
+  // Next.js may use an internal request URL hostname. Browsers send the public Host.
+  let sameOrigin = true;
+  if (origin) {
+    try {
+      const parsedOrigin = new URL(origin);
+      sameOrigin = ["http:", "https:"].includes(parsedOrigin.protocol) && parsedOrigin.host === (request.headers.get("host") ?? new URL(request.url).host);
+    } catch { sameOrigin = false; }
+  }
+  if (!sameOrigin || request.headers.get("sec-fetch-site") === "cross-site") return json({ error: "Please use Little Buddy's own page." }, 403);
   if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") return json({ error: "Please send JSON." }, 415);
   let body: unknown;
   try { body = await readBoundedJson(request); } catch { return json({ error: "Please send a small, valid message." }, 400); }

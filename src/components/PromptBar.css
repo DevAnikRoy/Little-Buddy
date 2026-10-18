@@ -1,0 +1,15 @@
+/* Adapted from React Bits Prompt Bar. Copyright (c) 2026 David Haz.
+   MIT + Commons Clause; see public/licenses/react-bits.txt. */
+.prompt-bar { --pb-radius: 24px; --pb-bg: #fffdf8; --pb-ink: #315849; --pb-muted: #596b62; width: 100%; color: var(--pb-ink); font: inherit; }
+.prompt-bar__field { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 2px solid #e4dfd0; border-radius: var(--pb-radius); background: var(--pb-bg); box-shadow: 0 4px 0 #e7e2d5; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.prompt-bar__field:focus-within { border-color: #39785f; box-shadow: 0 0 0 3px #dbeade, 0 4px 0 #dbeade; }
+.prompt-bar__input { width: 100%; min-width: 0; min-height: 56px; padding: 9px 12px; border: 0; outline: none; background: transparent; color: var(--pb-ink); font: inherit; font-size: 20px; line-height: 1.5; }
+.prompt-bar__input::placeholder { color: #677469; }
+.prompt-bar__input:focus-visible { outline: none; }
+.prompt-bar__footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-left: 12px; }
+.prompt-bar__hint { color: var(--pb-muted); font-size: 16px; }
+.prompt-bar__send { display: inline-grid; place-items: center; width: 56px; height: 56px; border: 0; border-radius: 19px; background: #e8e8dd; color: #657168; transition: background-color 160ms ease, transform 180ms cubic-bezier(.34,1.56,.64,1); }
+.prompt-bar__send[data-armed] { background: #326a50; color: #fff; box-shadow: 0 4px 0 #234d39; }
+.prompt-bar__send:not(:disabled):active { transform: translateY(3px) scale(.95); box-shadow: none; }
+.prompt-bar__glyph { display: block; width: 30px; height: 30px; }
+@media (prefers-reduced-motion: reduce) { .prompt-bar__field,.prompt-bar__send { transition: none; }.prompt-bar__send:not(:disabled):active { transform: none; } }

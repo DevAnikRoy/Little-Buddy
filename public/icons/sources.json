@@ -1,0 +1,66 @@
+[
+  {
+    "name": "learn",
+    "file": "learn.webp",
+    "source": "https://3dicons.sgp1.cdn.digitaloceanspaces.com/v1/dynamic/color/pencil-dynamic-color.png",
+    "creator": "Vijay Verma",
+    "license": "CC0-1.0",
+    "bytes": 2352
+  },
+  {
+    "name": "play",
+    "file": "play.webp",
+    "source": "https://3dicons.sgp1.cdn.digitaloceanspaces.com/v1/dynamic/color/rocket-dynamic-color.png",
+    "creator": "Vijay Verma",
+    "license": "CC0-1.0",
+    "bytes": 3550
+  },
+  {
+    "name": "talk",
+    "file": "talk.webp",
+    "source": "https://3dicons.sgp1.cdn.digitaloceanspaces.com/v1/dynamic/color/chat-text-dynamic-color.png",
+    "creator": "Vijay Verma",
+    "license": "CC0-1.0",
+    "bytes": 2992
+  },
+  {
+    "name": "star",
+    "file": "star.webp",
+    "source": "https://3dicons.sgp1.cdn.digitaloceanspaces.com/v1/dynamic/color/star-dynamic-color.png",
+    "creator": "Vijay Verma",
+    "license": "CC0-1.0",
+    "bytes": 2816
+  },
+  {
+    "name": "happy",
+    "file": "happy.webp",
+    "source": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Grinning%20face/3D/grinning_face_3d.png",
+    "creator": "Microsoft Corporation",
+    "license": "MIT",
+    "bytes": 4266
+  },
+  {
+    "name": "sad",
+    "file": "sad.webp",
+    "source": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Sad%20but%20relieved%20face/3D/sad_but_relieved_face_3d.png",
+    "creator": "Microsoft Corporation",
+    "license": "MIT",
+    "bytes": 4652
+  },
+  {
+    "name": "tired",
+    "file": "tired.webp",
+    "source": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Sleeping%20face/3D/sleeping_face_3d.png",
+    "creator": "Microsoft Corporation",
+    "license": "MIT",
+    "bytes": 4562
+  },
+  {
+    "name": "bear",
+    "file": "bear.webp",
+    "source": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Bear/3D/bear_3d.png",
+    "creator": "Microsoft Corporation",
+    "license": "MIT",
+    "bytes": 5712
+  }
+]
