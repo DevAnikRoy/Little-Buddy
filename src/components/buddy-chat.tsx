@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { getActivity, SKILLS, type Activity, type Skill } from "@/lib/learning/curriculum";
+import { getActivity, skillsForLevel, type Activity, type Skill } from "@/lib/learning/curriculum";
 import { learningSummary } from "@/lib/learning/engine";
 import { createProgress, isMastered, type Progress } from "@/lib/learning/progress";
 import { loadProgress, resetProgress, saveProgress } from "@/lib/learning/storage";
@@ -21,9 +21,9 @@ const SKILL_CHIP: Record<Skill, { label: string; mark: string }> = {
   colors: { label: "Colors", mark: "🔴" },
   animals: { label: "Animals", mark: "🐾" },
   preferences: { label: "I like", mark: "💛" },
-  sentences: { label: "Sentences", mark: "✏️" },
+  sentences: { label: "Finish it", mark: "✏️" },
   descriptions: { label: "Describe", mark: "🎈" },
-  stories: { label: "Stories", mark: "📖" },
+  stories: { label: "Story time", mark: "📖" },
 };
 
 function choiceIcon(choice: string): string {
@@ -139,6 +139,8 @@ export default function BuddyChat() {
   }
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); void send("message", input); }
   const summary = learningSummary(progress);
+  const stepSkills = skillsForLevel(summary.level);
+  const stepMastered = stepSkills.filter(skill => isMastered(progress, skill)).length;
   const unavailable = !ready || busy || retryAfter > 0;
   const active = messages.at(-1)?.role === "buddy" ? messages.at(-1)?.activity : null;
 
@@ -157,15 +159,15 @@ export default function BuddyChat() {
           <ol className="level-trail" aria-label={`Current level ${summary.level}`}>
             {(["L1", "L2", "L3"] as const).map((level, index) => <li key={level} aria-label={`Level ${index + 1}: ${["Words", "Sentences", "Stories"][index]}`} className={level === summary.level ? "current" : index < Number(summary.level[1]) - 1 ? "done" : "later"} aria-current={level === summary.level ? "step" : undefined}><span className="level-circle">{index < Number(summary.level[1]) - 1 ? "✓" : index + 1}</span><span>{["Words", "Sentences", "Stories"][index]}</span></li>)}
           </ol>
-          <ul className="skill-stickers" aria-label={`${summary.masteredSkills} of 6 skills starred`}>
-            {SKILLS.map(skill => {
+          <ul className="skill-stickers" aria-label={`${stepMastered} of ${stepSkills.length} skills starred this step`}>
+            {stepSkills.map(skill => {
               const got = isMastered(progress, skill);
               const chip = SKILL_CHIP[skill];
               return <li key={skill} className={got ? "starred" : "waiting"}><span aria-hidden="true">{got ? "⭐" : chip.mark}</span><span>{chip.label}</span></li>;
             })}
           </ul>
-          <div className="progress-caption"><span>{summary.complete ? "Look how you grew!" : "Little steps"}</span><strong>{summary.masteredSkills}/6</strong></div>
-          <progress max="6" value={summary.masteredSkills} aria-label={`${summary.masteredSkills} of 6 skills mastered`} />
+          <div className="progress-caption"><span>{summary.complete ? "Look how you grew!" : "This step"}</span><strong>{stepMastered}/{stepSkills.length}</strong></div>
+          <progress max={stepSkills.length} value={stepMastered} aria-label={`${stepMastered} of ${stepSkills.length} skills mastered this step`} />
         </section>
       </aside>
       <section className={`chat-panel room-${context.mode.toLowerCase()}`} aria-label="Chat with Buddy">

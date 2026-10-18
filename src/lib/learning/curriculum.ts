@@ -25,6 +25,9 @@ export const ACTIVITIES: readonly Activity[] = [
   make("story-help", "L3", "stories", "Ava cannot reach a book. A grown-up helps her. Who helps Ava?", ["a grown up", "grown up", "a grownup", "grownup", "a grown up helps ava"], ["A duck", "A ball", "A grown-up"], "A trusted adult can help us."),
 ];
 export const SKILL_LEVEL: Record<Skill, Level> = { colors: "L1", animals: "L1", preferences: "L2", sentences: "L2", descriptions: "L3", stories: "L3" };
+export function skillsForLevel(level: Level): Skill[] {
+  return SKILLS.filter(skill => SKILL_LEVEL[skill] === level);
+}
 export function getActivity(id: string): Activity {
   const activity = ACTIVITIES.find(a => a.id === id);
   if (!activity) throw new Error("Unknown activity");
