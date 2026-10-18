@@ -1,0 +1,591 @@
+{
+  "url": "https://little-buddy-two.vercel.app/api/chat",
+  "measuredAt": "2026-10-18T06:21:07.975Z",
+  "client": "node fetch from operator machine",
+  "groqConfiguredOnServer": "unknown; responses used source field",
+  "notes": [
+    "Timer covers DNS+TLS+TTFB+body parse of POST /api/chat.",
+    "Origin header matches the public host so the same-origin check passes.",
+    "Each request uses a new sessionId. Pause avoids the 60/min IP limiter.",
+    "First request is labelled cold-learn (may still be warm if the instance is hot)."
+  ],
+  "summary": {
+    "cold-learn": {
+      "n": 1,
+      "ok": 1,
+      "fail": 0,
+      "min": 1281,
+      "p50": 1281,
+      "p95": 1281,
+      "max": 1281,
+      "statuses": {
+        "200": 1
+      },
+      "sources": {
+        "rules": 1
+      },
+      "sampleErrors": []
+    },
+    "learn": {
+      "n": 15,
+      "ok": 15,
+      "fail": 0,
+      "min": 253,
+      "p50": 277,
+      "p95": 874,
+      "max": 874,
+      "statuses": {
+        "200": 15
+      },
+      "sources": {
+        "rules": 15
+      },
+      "sampleErrors": []
+    },
+    "answer": {
+      "n": 15,
+      "ok": 15,
+      "fail": 0,
+      "min": 261,
+      "p50": 274,
+      "p95": 343,
+      "max": 343,
+      "statuses": {
+        "200": 15
+      },
+      "sources": {
+        "rules": 15
+      },
+      "sampleErrors": []
+    },
+    "support": {
+      "n": 15,
+      "ok": 15,
+      "fail": 0,
+      "min": 258,
+      "p50": 269,
+      "p95": 540,
+      "max": 540,
+      "statuses": {
+        "200": 15
+      },
+      "sources": {
+        "rules": 15
+      },
+      "sampleErrors": []
+    },
+    "talk": {
+      "n": 15,
+      "ok": 15,
+      "fail": 0,
+      "min": 252,
+      "p50": 270,
+      "p95": 473,
+      "max": 473,
+      "statuses": {
+        "200": 15
+      },
+      "sources": {
+        "rules": 15
+      },
+      "sampleErrors": []
+    },
+    "warmAllRules": {
+      "n": 60,
+      "min": 252,
+      "p50": 271,
+      "p95": 448,
+      "max": 874
+    }
+  },
+  "samples": [
+    {
+      "label": "cold-learn",
+      "ms": 1281,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 281,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 289,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 276,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 874,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 302,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 277,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 298,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 275,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 288,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 276,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 293,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "learn",
+      "ms": 253,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 291,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 279,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 274,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 266,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 282,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 343,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 292,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 290,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 261,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "answer",
+      "ms": 282,
+      "status": 200,
+      "source": "rules",
+      "mode": "Learning",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 288,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 265,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 265,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 274,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 278,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 258,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 268,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 540,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 287,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "support",
+      "ms": 268,
+      "status": 200,
+      "source": "rules",
+      "mode": "Support",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 252,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 448,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 473,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 383,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 269,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 296,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 267,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 270,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 264,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 400,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    },
+    {
+      "label": "talk",
+      "ms": 271,
+      "status": 200,
+      "source": "rules",
+      "mode": "Conversation",
+      "error": ""
+    }
+  ]
+}
